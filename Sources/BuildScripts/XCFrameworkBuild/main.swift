@@ -48,7 +48,8 @@ enum Library: String, CaseIterable {
     var version: String {
         switch self {
         case .libmpv:
-            return "v0.41.0"
+            // Directory label only. The source commit is pinned in BuildMPV.beforeBuild.
+            return "master-3186d36"
         case .FFmpeg:
             return "n8.1.2"
         case .openssl:
@@ -76,7 +77,9 @@ enum Library: String, CaseIterable {
         case .lcms2:
             return "2.17.0"
         case .libplacebo:
-            return "7.360.1"
+            // Built locally from libplacebo master 92b5ac6 by mpvkit/libplacebo-build
+            // (recipe: Sources/BuildScripts/amp/libplacebo-build-pin.patch).
+            return "7.374.0-92b5ac6"
         case .libdovi:
             return "3.3.2"
         case .vulkan:
@@ -370,6 +373,23 @@ enum Library: String, CaseIterable {
 private class BuildMPV: BaseBuild {
     init() {
         super.init(library: .libmpv)
+    }
+
+    // Untagged mpv master, pinned by commit. BaseBuild clones only a branch or
+    // tag and applies patches only on a fresh clone, so do both here.
+    static let commit = "3186d369f9f090cd1363be0ac46a037824b702c6"
+
+    override func beforeBuild() throws {
+        if !FileManager.default.fileExists(atPath: directoryURL.path) {
+            try Utility.launch(path: "/usr/bin/git", arguments: ["clone", library.url, directoryURL.path])
+            try Utility.launch(path: "/usr/bin/git", arguments: ["-c", "advice.detachedHead=false", "checkout", Self.commit], currentDirectoryURL: directoryURL)
+            let patchDir = URL.currentDirectory + "../Sources/BuildScripts/patch/libmpv"
+            let names = try FileManager.default.contentsOfDirectory(atPath: patchDir.path).sorted()
+            for name in names where name.hasSuffix(".patch") {
+                try Utility.launch(path: "/usr/bin/git", arguments: ["apply", (patchDir + name).path], currentDirectoryURL: directoryURL)
+            }
+        }
+        try super.beforeBuild()
     }
 
     override func flagsDependencelibrarys() -> [Library] {

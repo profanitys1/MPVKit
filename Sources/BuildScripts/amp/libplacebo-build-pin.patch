@@ -1,0 +1,44 @@
+diff --git a/Sources/BuildScripts/XCFrameworkBuild/main.swift b/Sources/BuildScripts/XCFrameworkBuild/main.swift
+index 47d59e7..870a2c3 100644
+--- a/Sources/BuildScripts/XCFrameworkBuild/main.swift
++++ b/Sources/BuildScripts/XCFrameworkBuild/main.swift
+@@ -32,7 +32,8 @@ enum Library: String, CaseIterable, BuildLibrary {
+         case .spirvcross:  // parsing and converting SPIR-V to other shader languages.
+             return "vulkan-sdk-1.4.309.0"
+         case .libplacebo:
+-            return "v7.360.1"
++            // Directory/tag label only. The source commit is pinned in BuildPlacebo.beforeBuild.
++            return "v7.374.0-92b5ac6"
+         }
+     }
+ 
+@@ -107,18 +108,21 @@ private class BuildPlacebo: BaseBuild {
+         super.init(library: Library.libplacebo, options: options)
+     }
+ 
++    // Untagged libplacebo master, pinned by commit. BaseBuild can only clone a
++    // branch or tag, and it skips cloning when the directory exists, so clone
++    // and check out here first.
++    static let commit = "92b5ac6db79f4d680eb656692f7bf51e9606f42a"
++
+     override func beforeBuild() throws {
++        if !FileManager.default.fileExists(atPath: directoryURL.path) {
++            try Utility.launch(path: "/usr/bin/git", arguments: ["clone", library.url, directoryURL.path])
++            try Utility.launch(path: "/usr/bin/git", arguments: ["-c", "advice.detachedHead=false", "checkout", Self.commit], currentDirectoryURL: directoryURL)
++        }
+         try super.beforeBuild()
+ 
+-        
+-        // // switch to master branch, to pull newest code
+-        // try! Utility.launch(path: "/usr/bin/git", arguments: ["remote", "set-branches", "--add", "origin", "master"], currentDirectoryURL: directoryURL)
+-        // try! Utility.launch(path: "/usr/bin/git", arguments: ["fetch", "origin", "master:master"], currentDirectoryURL: directoryURL)
+-        // try! Utility.launch(path: "/usr/bin/git", arguments: ["checkout", "master"], currentDirectoryURL: directoryURL)
+-
+-        // pull all submodules
++        // pull all submodules (Vulkan-Headers, glad, jinja, fast_float)
+         Utility.shell("git submodule update --init --recursive", currentDirectoryURL: directoryURL)
+-  
++
+         // install jinja2 for distutils dependency
+         if Utility.shell("python3 -m pip list|grep jinja2") == nil {
+             Utility.shell("python3 -m pip install jinja2")
