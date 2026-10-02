@@ -44,6 +44,9 @@ do {
 
 
 enum Library: String, CaseIterable {
+    // amp fork release that carries the locally built libplacebo master and the GPL binaries.
+    static let ampReleaseTag = "amp-1.0.0-mpv3186d36-pl92b5ac6"
+
     case libmpv, FFmpeg, libshaderc, vulkan, lcms2, libdovi, openssl, libunibreak, libfreetype, libfribidi, libharfbuzz, libass, libsmbclient, libplacebo, libdav1d, gmp, nettle, gnutls, libuchardet, libbluray, libluajit, libuavs3d
     var version: String {
         switch self {
@@ -126,7 +129,7 @@ enum Library: String, CaseIterable {
         case .lcms2:
             return "https://github.com/mpvkit/lcms2-build/releases/download/\(self.version)/lcms2-all.zip"
         case .libplacebo:
-            return "https://github.com/mpvkit/libplacebo-build/releases/download/\(self.version)/libplacebo-all.zip"
+            return "https://github.com/profanitys1/MPVKit/releases/download/\(Library.ampReleaseTag)/libplacebo-all.zip"
         case .libdav1d:
             return "https://github.com/mpvkit/libdav1d-build/releases/download/\(self.version)/libdav1d-all.zip"
         case .libdovi:
@@ -297,8 +300,8 @@ enum Library: String, CaseIterable {
             return  [
                 .target(
                     name: "Libplacebo",
-                    url: "https://github.com/mpvkit/libplacebo-build/releases/download/\(self.version)/Libplacebo.xcframework.zip",
-                    checksum: "https://github.com/mpvkit/libplacebo-build/releases/download/\(self.version)/Libplacebo.xcframework.checksum.txt"
+                    url: "https://github.com/profanitys1/MPVKit/releases/download/\(Library.ampReleaseTag)/Libplacebo.xcframework.zip",
+                    checksum: "https://github.com/profanitys1/MPVKit/releases/download/\(Library.ampReleaseTag)/Libplacebo.xcframework.checksum.txt"
                 ),
             ]
         case .libdav1d:
