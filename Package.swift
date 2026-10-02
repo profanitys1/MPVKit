@@ -94,43 +94,43 @@ let package = Package(
         // GPL builds with MXF demuxer, VVC/APV decoders (MPV 0.41, FFmpeg n8.1.2), no LuaJIT
         .binaryTarget(
             name: "Libmpv-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libmpv-GPL.xcframework.zip",
-            checksum: "cfabdb70615205e8cb3c9f55dc6491194d900c42012b673f4e2819af8d216216"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libmpv-GPL.xcframework.zip",
+            checksum: "95d41516709711f22caf28c49d383e2625f98dcc52cc938f62a3aad73f15efc0"
         ),
         .binaryTarget(
             name: "Libavcodec-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libavcodec-GPL.xcframework.zip",
-            checksum: "b8bfd580f325995072a78bd9b8ec139781010955a96b09897a4cc202d80d17cf"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavcodec-GPL.xcframework.zip",
+            checksum: "b968cbc0657551419e88080ba8942ec14c31b7fc4a59b0928f78fdb3143c4699"
         ),
         .binaryTarget(
             name: "Libavdevice-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libavdevice-GPL.xcframework.zip",
-            checksum: "5eeb5485d9f2cf5b63f5d31aa65a06c07eb3b53c2b30ae95edde71af1c055658"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavdevice-GPL.xcframework.zip",
+            checksum: "6365a5fb2180e9054e490815e19260d88369d2d33aea66cf491de99d9783781b"
         ),
         .binaryTarget(
             name: "Libavformat-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libavformat-GPL.xcframework.zip",
-            checksum: "d8631fe273bb52326bb09e30e4f7dddfb197d656dc8072d7db117c5a618a832a"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavformat-GPL.xcframework.zip",
+            checksum: "3349c2a500a404945581d1e73b183a727edc8706d28936148e54f8b9cf051972"
         ),
         .binaryTarget(
             name: "Libavfilter-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libavfilter-GPL.xcframework.zip",
-            checksum: "7be6453e2146b1c3d99fd52e45d19566e7044bbf335799fc960f53a81e8e0b8f"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavfilter-GPL.xcframework.zip",
+            checksum: "161b85b5916b521c3d2eb63e0c5d9d394ab138a98316ce1151db7ca7b73ff46e"
         ),
         .binaryTarget(
             name: "Libavutil-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libavutil-GPL.xcframework.zip",
-            checksum: "c86a89424fde74caec2da4e56035050e7bad1e844465ce07b8a2b190d8d41fca"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavutil-GPL.xcframework.zip",
+            checksum: "9fe5e19e59b1cbd7d7c40c2521052985d7284270d377715a3c50e78e89178c7b"
         ),
         .binaryTarget(
             name: "Libswresample-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libswresample-GPL.xcframework.zip",
-            checksum: "5f0cf2dcf0c2f83c5ad734def64c042391803211dfda7bd31755adbef565b869"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libswresample-GPL.xcframework.zip",
+            checksum: "8ca4d2d1ba75ef499232e0e86c454f50333d936d9235258cf16d0d2ff7f6ca12"
         ),
         .binaryTarget(
             name: "Libswscale-GPL",
-            url: "https://github.com/aagedal/MPVKit/releases/download/aagedal-1.0.0-n8.1.2/Libswscale-GPL.xcframework.zip",
-            checksum: "0d1cb7d97b511bc34cbd1c49a3dd350ff3eecda8373265b221b3a20de92f82ff"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libswscale-GPL.xcframework.zip",
+            checksum: "68135b51c54fed08040aa30219e79a698e971ed17fe2146860f998cb230e9116"
         ),
         //AUTO_GENERATE_TARGETS_BEGIN//
 
@@ -242,8 +242,8 @@ let package = Package(
 
         .binaryTarget(
             name: "Libplacebo",
-            url: "https://github.com/mpvkit/libplacebo-build/releases/download/7.360.1/Libplacebo.xcframework.zip",
-            checksum: "2fa3d54cb81f302d6f11c7b2f509af30944381c3b11ee9d35096eb4637a6e2dd"
+            url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libplacebo.xcframework.zip",
+            checksum: "841e185d2d6f9e1085c9272aa132330761c295c8b44d3648385d143553a9a17b"
         ),
 
         .binaryTarget(
