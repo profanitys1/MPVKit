@@ -419,6 +419,10 @@ private class BuildMPV: BaseBuild {
             "-Djpeg=disabled",
             "-Dvapoursynth=disabled",
             "-Drubberband=disabled",
+            // mpv master's libcurl stream backend would be auto-enabled from the
+            // host's pkg-config and leave curl symbols unresolved in the app.
+            // FFmpeg's own protocols keep handling network input, as in 0.41.
+            "-Dlibcurl=disabled",
         ]
         if BaseBuild.options.enableGPL {
             array.append("-Dgpl=true")

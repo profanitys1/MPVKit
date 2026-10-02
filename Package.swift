@@ -95,42 +95,42 @@ let package = Package(
         .binaryTarget(
             name: "Libmpv-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libmpv-GPL.xcframework.zip",
-            checksum: "95d41516709711f22caf28c49d383e2625f98dcc52cc938f62a3aad73f15efc0"
+            checksum: "a91a90fe758b626124be24a64c0d875306acfde7985b04f216e40bbed09c7823"
         ),
         .binaryTarget(
             name: "Libavcodec-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavcodec-GPL.xcframework.zip",
-            checksum: "b968cbc0657551419e88080ba8942ec14c31b7fc4a59b0928f78fdb3143c4699"
+            checksum: "9a3f86f33eba26752bf2cfb11530b98c9f760c7c77c4dcb1179df2e899049675"
         ),
         .binaryTarget(
             name: "Libavdevice-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavdevice-GPL.xcframework.zip",
-            checksum: "6365a5fb2180e9054e490815e19260d88369d2d33aea66cf491de99d9783781b"
+            checksum: "5819df2dc0aafc2282a34a9533289cd0982cde2f9358cc14eafef91b855833d5"
         ),
         .binaryTarget(
             name: "Libavformat-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavformat-GPL.xcframework.zip",
-            checksum: "3349c2a500a404945581d1e73b183a727edc8706d28936148e54f8b9cf051972"
+            checksum: "d30f7c1dc6dda77b0cacd25030d7974e94f73d889f2e06e83e2d85d3c994b4f6"
         ),
         .binaryTarget(
             name: "Libavfilter-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavfilter-GPL.xcframework.zip",
-            checksum: "161b85b5916b521c3d2eb63e0c5d9d394ab138a98316ce1151db7ca7b73ff46e"
+            checksum: "622f79a7ae65e8a2a62be07b5b986c1f1da35e31ac5682fdb3364e31f2a57939"
         ),
         .binaryTarget(
             name: "Libavutil-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libavutil-GPL.xcframework.zip",
-            checksum: "9fe5e19e59b1cbd7d7c40c2521052985d7284270d377715a3c50e78e89178c7b"
+            checksum: "9c3dbf4916bfb984ed1fd7d2340953ae98b70c4ea26fbe8bd6685b492597d134"
         ),
         .binaryTarget(
             name: "Libswresample-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libswresample-GPL.xcframework.zip",
-            checksum: "8ca4d2d1ba75ef499232e0e86c454f50333d936d9235258cf16d0d2ff7f6ca12"
+            checksum: "c98dd3be25c58f60b89d26e4f5368972b1bfe8524aaabb2e8319bb0201405749"
         ),
         .binaryTarget(
             name: "Libswscale-GPL",
             url: "https://github.com/profanitys1/MPVKit/releases/download/amp-1.0.0-mpv3186d36-pl92b5ac6/Libswscale-GPL.xcframework.zip",
-            checksum: "68135b51c54fed08040aa30219e79a698e971ed17fe2146860f998cb230e9116"
+            checksum: "f23c86f5c17702346a3ae4aca4cc4c5ee487ae2440f2648ada23d187a4eef7dc"
         ),
         //AUTO_GENERATE_TARGETS_BEGIN//
 
