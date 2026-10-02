@@ -1,0 +1,213 @@
+diff --git a/video/out/vulkan/context_moltenvk.m b/video/out/vulkan/context_moltenvk.m
+index 445b907f79..13a4bbbe6c 100644
+--- a/video/out/vulkan/context_moltenvk.m
++++ b/video/out/vulkan/context_moltenvk.m
+@@ -15,24 +15,165 @@
+  * License along with mpv.  If not, see <http://www.gnu.org/licenses/>.
+  */
+ 
++#include <stdlib.h>
++#include <string.h>
++
+ #include <CoreGraphics/CoreGraphics.h>
++#include <CoreVideo/CoreVideo.h>
+ #include <QuartzCore/CAMetalLayer.h>
+ #include <MoltenVK/mvk_vulkan.h>
+ 
++#include "options/options.h"
++#include "osdep/threads.h"
++#include "osdep/timer.h"
++
+ #include "common.h"
+ #include "context.h"
+ #include "utils.h"
+ 
++// CVDisplayLink is deprecated since the macOS 15 SDK in favour of NSView/NSScreen
++// display links, which need AppKit objects this embedded context does not own.
++// Upstream mpv's macvk context still uses CVDisplayLink for the same timing.
++#pragma clang diagnostic push
++#pragma clang diagnostic ignored "-Wdeprecated-declarations"
++
++// Upcoming display times reported by the display link. 64 entries cover more
++// than half a second at 120 Hz; older entries are dropped and counted as skipped.
++#define VSYNC_SLOTS 64
++
+ struct priv {
+     struct mpvk_ctx vk;
+     CAMetalLayer *layer;
++
++    CVDisplayLinkRef link;
++    CGDirectDisplayID display;
++    mp_mutex lock;
++    int64_t times[VSYNC_SLOTS];     // mp_time_ns() of each upcoming vsync, ascending
++    int64_t durations[VSYNC_SLOTS]; // refresh period at that vsync, in ns
++    int count;
++    int overflowed;                 // entries dropped because the buffer was full
+ };
+ 
++static CVReturn display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
++                                const CVTimeStamp *output, CVOptionFlags flags_in,
++                                CVOptionFlags *flags_out, void *ctx)
++{
++    struct priv *p = ctx;
++    int64_t time = mp_time_ns_from_raw_time(mp_raw_time_ns_from_mach(output->hostTime));
++    int64_t duration = 0;
++    if (output->videoTimeScale > 0) {
++        duration = (int64_t)((double)output->videoRefreshPeriod / output->videoTimeScale
++                             * 1e9 * output->rateScalar);
++    }
++
++    mp_mutex_lock(&p->lock);
++    if (p->count == VSYNC_SLOTS) {
++        memmove(p->times, p->times + 1, (VSYNC_SLOTS - 1) * sizeof(p->times[0]));
++        memmove(p->durations, p->durations + 1, (VSYNC_SLOTS - 1) * sizeof(p->durations[0]));
++        p->count--;
++        p->overflowed++;
++    }
++    p->times[p->count] = time;
++    p->durations[p->count] = duration;
++    p->count++;
++    mp_mutex_unlock(&p->lock);
++    return kCVReturnSuccess;
++}
++
++// The display the embedder asked for through --screen-name (a decimal
++// CGDirectDisplayID), else the main display.
++static CGDirectDisplayID requested_display(struct ra_ctx *ctx)
++{
++    const char *name = ctx->vo->opts->screen_name;
++    if (name && name[0]) {
++        char *end = NULL;
++        unsigned long id = strtoul(name, &end, 10);
++        if (end && *end == '\0' && id > 0)
++            return (CGDirectDisplayID)id;
++    }
++    return CGMainDisplayID();
++}
++
++static void bind_display(struct ra_ctx *ctx)
++{
++    struct priv *p = ctx->priv;
++    CGDirectDisplayID display = requested_display(ctx);
++    if (!p->link || p->display == display)
++        return;
++    if (CVDisplayLinkSetCurrentCGDisplay(p->link, display) != kCVReturnSuccess) {
++        MP_WARN(ctx, "Could not bind display link to display %u\n", display);
++        return;
++    }
++    p->display = display;
++    // Times queued for the previous display no longer describe this one.
++    mp_mutex_lock(&p->lock);
++    p->count = 0;
++    p->overflowed = 0;
++    mp_mutex_unlock(&p->lock);
++    MP_VERBOSE(ctx, "Display link bound to display %u\n", display);
++}
++
++static void moltenvk_get_vsync(struct ra_ctx *ctx, struct vo_vsync_info *info)
++{
++    struct priv *p = ctx->priv;
++    if (!p->link)
++        return;
++
++    int64_t now = mp_time_ns();
++    mp_mutex_lock(&p->lock);
++    int expired = 0;
++    while (expired < p->count && p->times[expired] <= now)
++        expired++;
++    int removed = expired + p->overflowed;
++    p->overflowed = 0;
++    p->count -= expired;
++    memmove(p->times, p->times + expired, p->count * sizeof(p->times[0]));
++    memmove(p->durations, p->durations + expired, p->count * sizeof(p->durations[0]));
++    if (p->count > 0) {
++        info->last_queue_display_time = p->times[0];
++        info->vsync_duration = p->durations[0];
++        info->skipped_vsyncs = MPMAX(removed - 1, 0);
++    } else {
++        info->vsync_duration = -1;
++        info->skipped_vsyncs = -1;
++        info->last_queue_display_time = -1;
++    }
++    mp_mutex_unlock(&p->lock);
++}
++
++static void stop_display_link(struct priv *p)
++{
++    if (!p->link)
++        return;
++    CVDisplayLinkStop(p->link);
++    CVDisplayLinkRelease(p->link);
++    p->link = NULL;
++}
++
+ static void moltenvk_uninit(struct ra_ctx *ctx)
+ {
+     struct priv *p = ctx->priv;
++    stop_display_link(p);
+     ra_vk_ctx_uninit(ctx);
+     mpvk_uninit(&p->vk);
++    mp_mutex_destroy(&p->lock);
++}
++
++static void start_display_link(struct ra_ctx *ctx)
++{
++    struct priv *p = ctx->priv;
++    if (CVDisplayLinkCreateWithActiveCGDisplays(&p->link) != kCVReturnSuccess || !p->link) {
++        p->link = NULL;
++        MP_WARN(ctx, "No display link; frame timing falls back to the swap time\n");
++        return;
++    }
++    CVDisplayLinkSetOutputCallback(p->link, display_link_cb, p);
++    bind_display(ctx);
++    if (CVDisplayLinkStart(p->link) != kCVReturnSuccess) {
++        MP_WARN(ctx, "Could not start display link\n");
++        CVDisplayLinkRelease(p->link);
++        p->link = NULL;
++    }
+ }
+ 
+ static bool moltenvk_init(struct ra_ctx *ctx)
+@@ -40,6 +181,7 @@ static bool moltenvk_init(struct ra_ctx *ctx)
+     struct priv *p = ctx->priv = talloc_zero(ctx, struct priv);
+     struct mpvk_ctx *vk = &p->vk;
+     int msgl = ctx->opts.probing ? MSGL_V : MSGL_ERR;
++    mp_mutex_init(&p->lock);
+ 
+     if (ctx->vo->opts->WinID == -1) {
+         MP_MSG(ctx, msgl, "WinID missing\n");
+@@ -55,7 +197,9 @@ static bool moltenvk_init(struct ra_ctx *ctx)
+          .pLayer = p->layer,
+     };
+ 
+-    struct ra_ctx_params params = {0};
++    struct ra_ctx_params params = {
++        .get_vsync = moltenvk_get_vsync,
++    };
+ 
+     VkInstance inst = vk->vkinst->instance;
+     VkResult res = vkCreateMetalSurfaceEXT(inst, &info, NULL, &vk->surface);
+@@ -67,6 +211,7 @@ static bool moltenvk_init(struct ra_ctx *ctx)
+     if (!ra_vk_ctx_init(ctx, vk, params, VK_PRESENT_MODE_FIFO_KHR))
+         goto fail;
+ 
++    start_display_link(ctx);
+     return true;
+ fail:
+     moltenvk_uninit(ctx);
+@@ -83,9 +228,15 @@ static bool moltenvk_reconfig(struct ra_ctx *ctx)
+ 
+ static int moltenvk_control(struct ra_ctx *ctx, int *events, int request, void *arg)
+ {
++    // vo.c sends this on the VO thread whenever a vo option such as
++    // --screen-name changes, so the display link follows the window.
++    if (request == VOCTRL_VO_OPTS_CHANGED)
++        bind_display(ctx);
+     return VO_NOTIMPL;
+ }
+ 
++#pragma clang diagnostic pop
++
+ const struct ra_ctx_fns ra_ctx_vulkan_moltenvk = {
+     .type           = "vulkan",
+     .name           = "moltenvk",
